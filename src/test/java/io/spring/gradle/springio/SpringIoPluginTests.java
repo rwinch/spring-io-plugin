@@ -45,9 +45,13 @@ public class SpringIoPluginTests {
 
 	private File jdk8Home;
 
+	private File jdk9Home;
+
 	private File java7;
 
 	private File java8;
+
+	private File java9;
 
 	@Before
 	public void setup() throws IOException {
@@ -60,6 +64,11 @@ public class SpringIoPluginTests {
 		this.java8 = new File(jdk8Home, "bin/java");
 		this.java8.getParentFile().mkdirs();
 		this.java8.createNewFile();
+
+		this.jdk9Home = this.tempFolder.newFolder();
+		this.java9 = new File(jdk9Home, "bin/java");
+		this.java9.getParentFile().mkdirs();
+		this.java9.createNewFile();
 
 		this.project = ProjectBuilder.builder().withProjectDir(this.tempFolder.newFolder()).build();
 	}
@@ -123,6 +132,27 @@ public class SpringIoPluginTests {
 		assertThat(springIoJdk7Test.getReports().getHtml().getDestination())
 				.isEqualTo(new File(this.project.getBuildDir(), "reports/spring-io-jdk7-tests"));
 		assertThat(this.project.getTasks().findByName("springIoJdk8Test")).isNull();
+		assertThat(this.project.getTasks().findByName("springIoJdk9Test")).isNull();
+	}
+
+	@Test
+	public void pluginCreatesSpringIoJdk9TestTaskWhenJdk9IsAvailable() {
+		ExtraPropertiesExtension ext = (ExtraPropertiesExtension) project.getProperties().get("ext");
+		ext.set("JDK9_HOME", this.jdk9Home);
+		applyPlugin(SpringIoPlugin.class);
+		applyPlugin(JavaPlugin.class);
+		((DefaultProject)project).evaluate();
+		org.gradle.api.tasks.testing.Test springIoJdk9Test =
+				(org.gradle.api.tasks.testing.Test) this.project.getTasks().findByName("springIoJdk9Test");
+		assertThat(springIoJdk9Test).isNotNull();
+		assertThat(springIoJdk9Test.getExecutable()).isEqualTo(this.java9.getAbsolutePath());
+		assertThat(springIoJdk9Test).has(correctClasspath());
+		assertThat(springIoJdk9Test.getReports().getJunitXml().getDestination())
+				.isEqualTo(new File(this.project.getBuildDir(), "/spring-io-jdk9-test-results"));
+		assertThat(springIoJdk9Test.getReports().getHtml().getDestination())
+				.isEqualTo(new File(this.project.getBuildDir(), "reports/spring-io-jdk9-tests"));
+		assertThat(this.project.getTasks().findByName("springIoJdk7Test")).isNull();
+		assertThat(this.project.getTasks().findByName("springIoJdk8Test")).isNull();
 	}
 
 	@Test
@@ -142,6 +172,7 @@ public class SpringIoPluginTests {
 		assertThat(springIoJdk8Test.getReports().getHtml().getDestination())
 				.isEqualTo(new File(this.project.getBuildDir(), "reports/spring-io-jdk8-tests"));
 		assertThat(this.project.getTasks().findByName("springIoJdk7Test")).isNull();
+		assertThat(this.project.getTasks().findByName("springIoJdk9Test")).isNull();
 	}
 
 	@Test
@@ -168,6 +199,44 @@ public class SpringIoPluginTests {
 				.isEqualTo(new File(this.project.getBuildDir(), "/spring-io-jdk8-test-results"));
 		assertThat(springIoJdk8Test.getReports().getHtml().getDestination())
 				.isEqualTo(new File(this.project.getBuildDir(), "reports/spring-io-jdk8-tests"));
+		assertThat(this.project.getTasks().findByName("springIoJdk9Test")).isNull();
+
+	}
+
+	@Test
+	public void pluginCreatesSpringIoJdk7And8And9TestTasksWhenJdk7And8And9AreAvailable() {
+		ExtraPropertiesExtension ext = (ExtraPropertiesExtension) project.getProperties().get("ext");
+		ext.set("JDK7_HOME", this.jdk7Home);
+		ext.set("JDK8_HOME", this.jdk8Home);
+		ext.set("JDK9_HOME", this.jdk9Home);
+		applyPlugin(SpringIoPlugin.class);
+		applyPlugin(JavaPlugin.class);
+		((DefaultProject)project).evaluate();
+		org.gradle.api.tasks.testing.Test springIoJdk7Test =
+				(org.gradle.api.tasks.testing.Test) this.project.getTasks().findByName("springIoJdk7Test");
+		assertThat(springIoJdk7Test).isNotNull();
+		assertThat(springIoJdk7Test.getExecutable()).isEqualTo(this.java7.getAbsolutePath());
+		assertThat(springIoJdk7Test).has(correctClasspath());
+		assertThat(springIoJdk7Test.getReports().getJunitXml().getDestination())
+				.isEqualTo(new File(this.project.getBuildDir(), "/spring-io-jdk7-test-results"));
+		org.gradle.api.tasks.testing.Test springIoJdk8Test =
+				(org.gradle.api.tasks.testing.Test) this.project.getTasks().findByName("springIoJdk8Test");
+		assertThat(springIoJdk8Test).isNotNull();
+		assertThat(springIoJdk8Test.getExecutable()).isEqualTo(this.java8.getAbsolutePath());
+		assertThat(springIoJdk8Test).has(correctClasspath());
+		assertThat(springIoJdk8Test.getReports().getJunitXml().getDestination())
+				.isEqualTo(new File(this.project.getBuildDir(), "/spring-io-jdk8-test-results"));
+		assertThat(springIoJdk8Test.getReports().getHtml().getDestination())
+				.isEqualTo(new File(this.project.getBuildDir(), "reports/spring-io-jdk8-tests"));
+		org.gradle.api.tasks.testing.Test springIoJdk9Test =
+				(org.gradle.api.tasks.testing.Test) this.project.getTasks().findByName("springIoJdk9Test");
+		assertThat(springIoJdk9Test).isNotNull();
+		assertThat(springIoJdk9Test.getExecutable()).isEqualTo(this.java9.getAbsolutePath());
+		assertThat(springIoJdk9Test).has(correctClasspath());
+		assertThat(springIoJdk9Test.getReports().getJunitXml().getDestination())
+				.isEqualTo(new File(this.project.getBuildDir(), "/spring-io-jdk9-test-results"));
+		assertThat(springIoJdk9Test.getReports().getHtml().getDestination())
+				.isEqualTo(new File(this.project.getBuildDir(), "reports/spring-io-jdk9-tests"));
 
 	}
 
@@ -177,12 +246,14 @@ public class SpringIoPluginTests {
 		ExtraPropertiesExtension ext = (ExtraPropertiesExtension) project.getProperties().get("ext");
 		ext.set("JDK7_HOME", this.jdk7Home);
 		ext.set("JDK8_HOME", this.jdk8Home);
+		ext.set("JDK9_HOME", this.jdk9Home);
 		applyPlugin(SpringIoPlugin.class);
 		applyPlugin(JavaPlugin.class);
 		Task springIoTest = project.getTasks().findByName("springIoTest");
 		assertThat(springIoTest.getTaskDependencies().getDependencies(springIoTest))
 				.containsExactlyInAnyOrder(this.project.getTasks().findByName("springIoJdk7Test"),
-						this.project.getTasks().findByName("springIoJdk8Test"));
+						this.project.getTasks().findByName("springIoJdk8Test"),
+						this.project.getTasks().findByName("springIoJdk9Test"));
 	}
 
 	@Test

@@ -88,6 +88,7 @@ public class SpringIoPlugin implements Plugin<Project> {
 
 		maybeCreateJdkTest(project, springIoTestRuntimeConfiguration, "Jdk7", springIoTest, springIoTestSourceSet);
 		maybeCreateJdkTest(project, springIoTestRuntimeConfiguration, "Jdk8", springIoTest, springIoTestSourceSet);
+		maybeCreateJdkTest(project, springIoTestRuntimeConfiguration, "Jdk9", springIoTest, springIoTestSourceSet);
 
 		final Task incompleteExcludesCheck = project.getTasks().create(INCOMPLETE_EXCLUDES_TASK_NAME, IncompleteExcludesTask.class);
 		final Task alternativeDependenciesCheck = project.getTasks().create(ALTERNATIVE_DEPENDENCIES_TASK_NAME, AlternativeDependenciesTask.class);
